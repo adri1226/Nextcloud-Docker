@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mariadb:latest
+    container_name: nextcloud-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextclouduser
+      MYSQL_PASSWORD: nextcloudpass
+    volumes:
+      - ./db:/var/lib/mysql
+
+  app:
+    image: nextcloud:latest
+    container_name: nextcloud-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: adminpass
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost
+      MYSQL_HOST: db
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextclouduser
+      MYSQL_PASSWORD: nextcloudpass
+    volumes:
+      - ./nextcloud/config:/var/www/html/config
+      - ./nextcloud/data:/var/www/html/data
+      - ./nextcloud/custom_apps:/var/www/html/custom_apps
+      - ./nextcloud/themes:/var/www/html/themes
+      - external_storage:/external
+    depends_on:
+      - db
+
+volumes:
+  external_storage:
+    driver: local
+    driver_opts:
+      type: none
+      device: W:\
+      o: bind
+
